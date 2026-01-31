@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "ZipUnity.sln"
+    "dotnet.defaultSolution": "ZipUnity.slnx"
 }

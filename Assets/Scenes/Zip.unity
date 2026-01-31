@@ -986,7 +986,7 @@ MonoBehaviour:
   cellParent: {fileID: 83420546}
   cellBlockRightPrefab: {fileID: 1804960805028633474, guid: d12dd5116b3591c46b02f4e60975e289, type: 3}
   cellBlockUpPrefab: {fileID: 3880419457574789274, guid: 76cdc078fbebffb49ab4b3d97dab85b2, type: 3}
-  gridJsonFile: {fileID: 4900000, guid: 6d7689f8535199b43a31876716967031, type: 3}
+  gridJsonFile: {fileID: 4900000, guid: 215f3b9c86578564f9ba2da2b82bdd27, type: 3}
 --- !u!4 &83420546
 Transform:
   m_ObjectHideFlags: 0

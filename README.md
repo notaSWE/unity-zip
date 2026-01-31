@@ -74,7 +74,7 @@ When creating your own puzzle: (1) set `width` and `height`; (2) fill `cells` so
 ## Running from Source (Unity Editor)
 
 1. **Unity version**  
-   The project uses **Unity 6** (6000.0.23f1). Use this or a compatible 6.x version to avoid import/API issues.
+   The project uses **Unity 6** (6000.3.6f1). Use this or a compatible 6.x version to avoid import/API issues.
 
 2. **Get the project**  
    Clone or download the repo:

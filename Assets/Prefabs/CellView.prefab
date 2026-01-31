@@ -50,6 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   label: {fileID: 0}
   background: {fileID: 5407157108608991936}
+  Badge: {fileID: 0}
 --- !u!212 &5407157108608991936
 SpriteRenderer:
   m_ObjectHideFlags: 0

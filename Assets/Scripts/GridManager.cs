@@ -127,7 +127,7 @@ public class GridManager : MonoBehaviour
                         {
                             if (cellValue != 0)
                             {
-                                Debug.Log($"Cell [{x}, {y}] value from JSON: {cellValue}");
+                                // Debug.Log($"Cell [{x}, {y}] value from JSON: {cellValue}");
                                 valueText.text = cellValue.ToString();
                             }
                             else
@@ -137,17 +137,17 @@ public class GridManager : MonoBehaviour
                         }
                         else
                         {
-                            Debug.LogWarning($"Cell [{x}, {y}]: Value transform found but TMP_Text component is null");
+                            // Debug.LogWarning($"Cell [{x}, {y}]: Value transform found but TMP_Text component is null");
                         }
                     }
                     else
                     {
-                        Debug.LogWarning($"Cell [{x}, {y}]: Value child transform not found. Child count: {cell.transform.childCount}");
+                        // Debug.LogWarning($"Cell [{x}, {y}]: Value child transform not found. Child count: {cell.transform.childCount}");
                         // List all children for debugging
-                        for (int i = 0; i < cell.transform.childCount; i++)
-                        {
-                            Debug.LogWarning($"  Child {i}: {cell.transform.GetChild(i).name}");
-                        }
+                        // for (int i = 0; i < cell.transform.childCount; i++)
+                        // {
+                        //     Debug.LogWarning($"  Child {i}: {cell.transform.GetChild(i).name}");
+                        // }
                     }
 
                     _cells[x, worldY] = cell;
@@ -159,8 +159,8 @@ public class GridManager : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"Failed to build grid from JSON: {e.Message}");
-            Debug.LogError($"Falling back to default grid build.");
+            // Debug.LogError($"Failed to build grid from JSON: {e.Message}");
+            // Debug.LogError($"Falling back to default grid build.");
             BuildGridDefault();
         }
     }
@@ -523,11 +523,11 @@ public class GridManager : MonoBehaviour
         if (gridPos.x >= 0 && gridPos.y >= 0 && 
             gridPos.x < _cells.GetLength(0) && gridPos.y < _cells.GetLength(1))
         {
-            Debug.Log($"GetCellAtWorldPosition: World pos {worldPos} -> Grid pos [{gridPos.x}, {gridPos.y}], Array size: [{_cells.GetLength(0)}, {_cells.GetLength(1)}]");
+            // Debug.Log($"GetCellAtWorldPosition: World pos {worldPos} -> Grid pos [{gridPos.x}, {gridPos.y}], Array size: [{_cells.GetLength(0)}, {_cells.GetLength(1)}]");
             return _cells[gridPos.x, gridPos.y];
         }
         
-        Debug.Log($"GetCellAtWorldPosition: World pos {worldPos} -> Grid pos [{gridPos.x}, {gridPos.y}] is out of bounds. Array size: [{_cells.GetLength(0)}, {_cells.GetLength(1)}]");
+        // Debug.Log($"GetCellAtWorldPosition: World pos {worldPos} -> Grid pos [{gridPos.x}, {gridPos.y}] is out of bounds. Array size: [{_cells.GetLength(0)}, {_cells.GetLength(1)}]");
         return null;
     }
 

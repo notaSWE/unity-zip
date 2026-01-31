@@ -33,15 +33,38 @@ public class ZipInputController : MonoBehaviour
         
         if (cell == null)
             return;
-        
+
+        bool snakeExists = path.Count > 1;
+        bool puzzleNotSolved = !IsPuzzleSolved();
+        CellView headCell = path.Count > 0 ? path[0] : null;
+        CellView tailCell = path.Count > 0 ? path[^1] : null;
+
+        // Reset: snake length > 1, puzzle not solved, player clicked on the first cell (value 1)
+        if (snakeExists && puzzleNotSolved && headCell != null && cell == headCell && cell.Number == 1)
+        {
+            ClearPath();
+            visitedNumbers.Clear();
+            AddCell(cell);
+            nextNumberExpected = 2;
+            isDrawing = true;
+            return;
+        }
+
+        // Start from end of snake: snake length > 1, puzzle not solved, player clicked on the tail
+        if (snakeExists && puzzleNotSolved && tailCell != null && cell == tailCell)
+        {
+            isDrawing = true;
+            return;
+        }
+
+        // Normal start: only when no snake (or empty) and clicking on cell with Number == 1
         if (cell.Number != 1)
             return;
 
         ClearPath();
         visitedNumbers.Clear();
-
-        AddCell(cell);               // will mark visited; since it's 1, we should treat it as already satisfied
-        nextNumberExpected = 2;      // next target after 1
+        AddCell(cell);
+        nextNumberExpected = 2;
         isDrawing = true;
     }
 
@@ -153,7 +176,7 @@ public class ZipInputController : MonoBehaviour
         // Determine movement direction: horizontal (left/right) or vertical (up/down)
         bool isHorizontalMovement = Mathf.Abs(dir.x) > Mathf.Abs(dir.y);
         
-        Debug.Log($"IsBlocked: Checking from [{from.X}, {from.Y}] to [{to.X}, {to.Y}], horizontal={isHorizontalMovement}, barrierMask={barrierMask.value}");
+        // Debug.Log($"IsBlocked: Checking from [{from.X}, {from.Y}] to [{to.X}, {to.Y}], horizontal={isHorizontalMovement}, barrierMask={barrierMask.value}");
 
         // Use OverlapArea to check the entire area between cells - most reliable method
         Vector2 perpendicular = new Vector2(-dir.y, dir.x).normalized; // Perpendicular to movement direction
@@ -166,21 +189,21 @@ public class ZipInputController : MonoBehaviour
         
         Collider2D[] overlaps = Physics2D.OverlapAreaAll(corner1, corner2, barrierMask);
         
-        Debug.Log($"IsBlocked: Found {overlaps.Length} colliders in overlap area between [{from.X}, {from.Y}] and [{to.X}, {to.Y}]");
-        Debug.Log($"IsBlocked: Overlap area corners: {corner1} to {corner2}");
+        // Debug.Log($"IsBlocked: Found {overlaps.Length} colliders in overlap area between [{from.X}, {from.Y}] and [{to.X}, {to.Y}]");
+        // Debug.Log($"IsBlocked: Overlap area corners: {corner1} to {corner2}");
 
         // Also directly check children of source and destination cells for barriers
         // This ensures we catch barriers even if the overlap area misses them
-        Debug.Log($"IsBlocked: Checking source cell [{from.X}, {from.Y}] children for barriers...");
+        // Debug.Log($"IsBlocked: Checking source cell [{from.X}, {from.Y}] children for barriers...");
         if (CheckCellChildrenForBarriers(from, to, isHorizontalMovement, dir, true))
         {
-            Debug.Log($"IsBlocked: Source cell check returned TRUE - movement blocked!");
+            // Debug.Log($"IsBlocked: Source cell check returned TRUE - movement blocked!");
             return true;
         }
-        Debug.Log($"IsBlocked: Checking destination cell [{to.X}, {to.Y}] children for barriers...");
+        // Debug.Log($"IsBlocked: Checking destination cell [{to.X}, {to.Y}] children for barriers...");
         if (CheckCellChildrenForBarriers(to, from, isHorizontalMovement, dir, false))
         {
-            Debug.Log($"IsBlocked: Destination cell check returned TRUE - movement blocked!");
+            // Debug.Log($"IsBlocked: Destination cell check returned TRUE - movement blocked!");
             return true;
         }
 
@@ -190,12 +213,12 @@ public class ZipInputController : MonoBehaviour
             int barrierLayer = col.gameObject.layer;
             bool isCell = col.GetComponent<CellView>() != null;
             
-            Debug.Log($"IsBlocked: Collider '{barrierName}' on layer {barrierLayer}, isCell={isCell}, enabled={col.enabled}");
+            // Debug.Log($"IsBlocked: Collider '{barrierName}' on layer {barrierLayer}, isCell={isCell}, enabled={col.enabled}");
             
             // Ignore the source and destination cell colliders
             if (col.GetComponent<CellView>() == from || col.GetComponent<CellView>() == to)
             {
-                Debug.Log($"IsBlocked: Skipping cell collider '{barrierName}'");
+                // Debug.Log($"IsBlocked: Skipping cell collider '{barrierName}'");
                 continue;
             }
             
@@ -206,11 +229,11 @@ public class ZipInputController : MonoBehaviour
             CellView barrierCell = col.GetComponentInParent<CellView>();
             if (barrierCell == null)
             {
-                Debug.Log($"IsBlocked: Barrier '{barrierName}' has no parent CellView");
+                // Debug.Log($"IsBlocked: Barrier '{barrierName}' has no parent CellView");
                 continue;
             }
             
-            Debug.Log($"IsBlocked: Found barrier '{barrierName}' on layer {barrierLayer}, belongs to cell [{barrierCell.X}, {barrierCell.Y}], isCellBlockUp={isCellBlockUp}, isCellBlockRight={isCellBlockRight}");
+            // Debug.Log($"IsBlocked: Found barrier '{barrierName}' on layer {barrierLayer}, belongs to cell [{barrierCell.X}, {barrierCell.Y}], isCellBlockUp={isCellBlockUp}, isCellBlockRight={isCellBlockRight}");
             
             // CellBlockUp blocks vertical movement
             // CellBlockUp is positioned at the TOP of a cell, so it blocks:
@@ -221,19 +244,16 @@ public class ZipInputController : MonoBehaviour
                 bool isMovingDown = dir.y < 0;
                 bool isMovingUp = dir.y > 0;
                 
-                Debug.Log($"IsBlocked: OverlapArea CellBlockUp check - isMovingDown={isMovingDown}, isMovingUp={isMovingUp}, barrierCell=[{barrierCell.X}, {barrierCell.Y}], from=[{from.X}, {from.Y}], to=[{to.X}, {to.Y}]");
+                // Debug.Log($"IsBlocked: OverlapArea CellBlockUp check - isMovingDown={isMovingDown}, isMovingUp={isMovingUp}, barrierCell=[{barrierCell.X}, {barrierCell.Y}], from=[{from.X}, {from.Y}], to=[{to.X}, {to.Y}]");
                 
                 // CellBlockUp on destination blocks downward movement (moving down into destination)
                 // CellBlockUp on source blocks upward movement (moving up out of source)
                 if ((isMovingDown && barrierCell == to) || (isMovingUp && barrierCell == from))
                 {
-                    Debug.Log($"IsBlocked: OverlapArea - CellBlockUp on cell [{barrierCell.X}, {barrierCell.Y}] blocking vertical movement from [{from.X}, {from.Y}] to [{to.X}, {to.Y}]");
+                    // Debug.Log($"IsBlocked: OverlapArea - CellBlockUp on cell [{barrierCell.X}, {barrierCell.Y}] blocking vertical movement from [{from.X}, {from.Y}] to [{to.X}, {to.Y}]");
                     return true;
                 }
-                else
-                {
-                    Debug.Log($"IsBlocked: OverlapArea CellBlockUp found but not blocking - barrier on [{barrierCell.X}, {barrierCell.Y}], movingDown={isMovingDown}, movingUp={isMovingUp}, barrierCell==to={barrierCell == to}, barrierCell==from={barrierCell == from}");
-                }
+                // else { Debug.Log($"IsBlocked: OverlapArea CellBlockUp found but not blocking - barrier on [{barrierCell.X}, {barrierCell.Y}], movingDown={isMovingDown}, movingUp={isMovingUp}, barrierCell==to={barrierCell == to}, barrierCell==from={barrierCell == from}"); }
             }
             
             // CellBlockRight blocks horizontal movement
@@ -247,25 +267,22 @@ public class ZipInputController : MonoBehaviour
                 // CellBlockRight on the source cell blocks movement FROM it going right
                 if (isMovingRight && barrierCell == from)
                 {
-                    Debug.Log($"IsBlocked: CellBlockRight on source cell [{barrierCell.X}, {barrierCell.Y}] blocking rightward movement from [{from.X}, {from.Y}] to [{to.X}, {to.Y}]");
+                    // Debug.Log($"IsBlocked: CellBlockRight on source cell [{barrierCell.X}, {barrierCell.Y}] blocking rightward movement from [{from.X}, {from.Y}] to [{to.X}, {to.Y}]");
                     return true;
                 }
                 // CellBlockRight on the destination cell blocks movement TO it from the left (moving right)
                 else if (isMovingRight && barrierCell == to)
                 {
-                    Debug.Log($"IsBlocked: CellBlockRight on destination cell [{barrierCell.X}, {barrierCell.Y}] blocking rightward movement from [{from.X}, {from.Y}] to [{to.X}, {to.Y}]");
+                    // Debug.Log($"IsBlocked: CellBlockRight on destination cell [{barrierCell.X}, {barrierCell.Y}] blocking rightward movement from [{from.X}, {from.Y}] to [{to.X}, {to.Y}]");
                     return true;
                 }
                 // Moving left - CellBlockRight on source cell blocks leftward movement
                 else if (isMovingLeft && barrierCell == from)
                 {
-                    Debug.Log($"IsBlocked: CellBlockRight on source cell [{barrierCell.X}, {barrierCell.Y}] blocking leftward movement from [{from.X}, {from.Y}] to [{to.X}, {to.Y}]");
+                    // Debug.Log($"IsBlocked: CellBlockRight on source cell [{barrierCell.X}, {barrierCell.Y}] blocking leftward movement from [{from.X}, {from.Y}] to [{to.X}, {to.Y}]");
                     return true;
                 }
-                else
-                {
-                    Debug.Log($"IsBlocked: CellBlockRight found but on wrong cell - barrier on [{barrierCell.X}, {barrierCell.Y}], from [{from.X}, {from.Y}] to [{to.X}, {to.Y}], movingRight={isMovingRight}, movingLeft={isMovingLeft}");
-                }
+                // else { Debug.Log($"IsBlocked: CellBlockRight found but on wrong cell - barrier on [{barrierCell.X}, {barrierCell.Y}], from [{from.X}, {from.Y}] to [{to.X}, {to.Y}], movingRight={isMovingRight}, movingLeft={isMovingLeft}"); }
             }
         }
 
@@ -282,7 +299,7 @@ public class ZipInputController : MonoBehaviour
                 bool isCellBlockUp = barrierName.Contains("CellBlockUp");
                 bool isCellBlockRight = barrierName.Contains("CellBlockRight");
                 
-                Debug.Log($"IsBlocked: Raycast hit '{barrierName}', isCellBlockUp={isCellBlockUp}, isCellBlockRight={isCellBlockRight}, horizontal={isHorizontalMovement}");
+                // Debug.Log($"IsBlocked: Raycast hit '{barrierName}', isCellBlockUp={isCellBlockUp}, isCellBlockRight={isCellBlockRight}, horizontal={isHorizontalMovement}");
                 
                 if (isCellBlockUp && !isHorizontalMovement)
                 {
@@ -296,7 +313,7 @@ public class ZipInputController : MonoBehaviour
             }
         }
 
-        Debug.Log($"IsBlocked: No blocking barrier found between [{from.X}, {from.Y}] and [{to.X}, {to.Y}]");
+        // Debug.Log($"IsBlocked: No blocking barrier found between [{from.X}, {from.Y}] and [{to.X}, {to.Y}]");
         return false;
     }
 
@@ -304,17 +321,17 @@ public class ZipInputController : MonoBehaviour
     {
         if (cell == null)
         {
-            Debug.Log($"IsBlocked: CheckCellChildrenForBarriers - cell is null!");
+            // Debug.Log($"IsBlocked: CheckCellChildrenForBarriers - cell is null!");
             return false;
         }
         
-        Debug.Log($"IsBlocked: CheckCellChildrenForBarriers - Checking cell [{cell.X}, {cell.Y}], childCount={cell.transform.childCount}");
+        // Debug.Log($"IsBlocked: CheckCellChildrenForBarriers - Checking cell [{cell.X}, {cell.Y}], childCount={cell.transform.childCount}");
         
         // Check all children of this cell for barrier components
         for (int i = 0; i < cell.transform.childCount; i++)
         {
             Transform child = cell.transform.GetChild(i);
-            Debug.Log($"IsBlocked: Checking child {i}: '{child.name}'");
+            // Debug.Log($"IsBlocked: Checking child {i}: '{child.name}'");
             
             // Try GetComponent first, then GetComponentInChildren in case collider is nested
             Collider2D col = child.GetComponent<Collider2D>();
@@ -323,19 +340,19 @@ public class ZipInputController : MonoBehaviour
                 col = child.GetComponentInChildren<Collider2D>();
                 if (col != null)
                 {
-                    Debug.Log($"IsBlocked: Found Collider2D in children of '{child.name}'");
+                    // Debug.Log($"IsBlocked: Found Collider2D in children of '{child.name}'");
                 }
             }
             
             if (col == null)
             {
-                Debug.Log($"IsBlocked: Child '{child.name}' has no Collider2D (checked self and children)");
+                // Debug.Log($"IsBlocked: Child '{child.name}' has no Collider2D (checked self and children)");
                 continue;
             }
             
             if (!col.enabled)
             {
-                Debug.Log($"IsBlocked: Child '{child.name}' collider is disabled");
+                // Debug.Log($"IsBlocked: Child '{child.name}' collider is disabled");
                 continue;
             }
             
@@ -344,11 +361,11 @@ public class ZipInputController : MonoBehaviour
             int layerBit = 1 << layer;
             bool layerMatches = (barrierMask.value & layerBit) != 0;
             
-            Debug.Log($"IsBlocked: Child '{child.name}' - layer={layer}, layerBit={layerBit}, barrierMask={barrierMask.value}, layerMatches={layerMatches}");
+            // Debug.Log($"IsBlocked: Child '{child.name}' - layer={layer}, layerBit={layerBit}, barrierMask={barrierMask.value}, layerMatches={layerMatches}");
             
             if (!layerMatches)
             {
-                Debug.Log($"IsBlocked: Child '{child.name}' is not on barrier layer, skipping");
+                // Debug.Log($"IsBlocked: Child '{child.name}' is not on barrier layer, skipping");
                 continue;
             }
             
@@ -356,7 +373,7 @@ public class ZipInputController : MonoBehaviour
             bool isCellBlockUp = barrierName.Contains("CellBlockUp");
             bool isCellBlockRight = barrierName.Contains("CellBlockRight");
             
-            Debug.Log($"IsBlocked: Direct child check - Found '{barrierName}' on cell [{cell.X}, {cell.Y}], isCellBlockUp={isCellBlockUp}, isCellBlockRight={isCellBlockRight}, layer={layer}, enabled={col.enabled}");
+            // Debug.Log($"IsBlocked: Direct child check - Found '{barrierName}' on cell [{cell.X}, {cell.Y}], isCellBlockUp={isCellBlockUp}, isCellBlockRight={isCellBlockRight}, layer={layer}, enabled={col.enabled}");
             
             // CellBlockUp blocks vertical movement
             // CellBlockUp is positioned at the TOP of a cell, so it blocks:
@@ -367,19 +384,16 @@ public class ZipInputController : MonoBehaviour
                 bool isMovingDown = dir.y < 0;
                 bool isMovingUp = dir.y > 0;
                 
-                Debug.Log($"IsBlocked: CellBlockUp check - isMovingDown={isMovingDown}, isMovingUp={isMovingUp}, cell=[{cell.X}, {cell.Y}], otherCell=[{otherCell.X}, {otherCell.Y}], isSourceCell={isSourceCell}");
+                // Debug.Log($"IsBlocked: CellBlockUp check - isMovingDown={isMovingDown}, isMovingUp={isMovingUp}, cell=[{cell.X}, {cell.Y}], otherCell=[{otherCell.X}, {otherCell.Y}], isSourceCell={isSourceCell}");
                 
                 // CellBlockUp on source blocks upward movement (moving up out of source)
                 // CellBlockUp on destination blocks downward movement (moving down into destination)
                 if ((isSourceCell && isMovingUp) || (!isSourceCell && isMovingDown))
                 {
-                    Debug.Log($"IsBlocked: Direct check - CellBlockUp on cell [{cell.X}, {cell.Y}] blocking vertical movement - RETURNING TRUE");
+                    // Debug.Log($"IsBlocked: Direct check - CellBlockUp on cell [{cell.X}, {cell.Y}] blocking vertical movement - RETURNING TRUE");
                     return true;
                 }
-                else
-                {
-                    Debug.Log($"IsBlocked: CellBlockUp found but not blocking - barrier on [{cell.X}, {cell.Y}], movingDown={isMovingDown}, movingUp={isMovingUp}, isSourceCell={isSourceCell}");
-                }
+                // else { Debug.Log($"IsBlocked: CellBlockUp found but not blocking - barrier on [{cell.X}, {cell.Y}], movingDown={isMovingDown}, movingUp={isMovingUp}, isSourceCell={isSourceCell}"); }
             }
             
             // CellBlockRight blocks horizontal movement
@@ -391,23 +405,20 @@ public class ZipInputController : MonoBehaviour
                 bool isMovingRight = dir.x > 0;
                 bool isMovingLeft = dir.x < 0;
                 
-                Debug.Log($"IsBlocked: CellBlockRight check - isMovingRight={isMovingRight}, isMovingLeft={isMovingLeft}, cell=[{cell.X}, {cell.Y}], otherCell=[{otherCell.X}, {otherCell.Y}], isSourceCell={isSourceCell}");
+                // Debug.Log($"IsBlocked: CellBlockRight check - isMovingRight={isMovingRight}, isMovingLeft={isMovingLeft}, cell=[{cell.X}, {cell.Y}], otherCell=[{otherCell.X}, {otherCell.Y}], isSourceCell={isSourceCell}");
                 
                 // CellBlockRight on source blocks rightward movement (moving right out of source)
                 // CellBlockRight on destination blocks leftward movement (moving left into destination)
                 if ((isSourceCell && isMovingRight) || (!isSourceCell && isMovingLeft))
                 {
-                    Debug.Log($"IsBlocked: Direct check - CellBlockRight on cell [{cell.X}, {cell.Y}] blocking horizontal movement - RETURNING TRUE");
+                    // Debug.Log($"IsBlocked: Direct check - CellBlockRight on cell [{cell.X}, {cell.Y}] blocking horizontal movement - RETURNING TRUE");
                     return true;
                 }
-                else
-                {
-                    Debug.Log($"IsBlocked: CellBlockRight found but not blocking - barrier on [{cell.X}, {cell.Y}], movingRight={isMovingRight}, movingLeft={isMovingLeft}, isSourceCell={isSourceCell}");
-                }
+                // else { Debug.Log($"IsBlocked: CellBlockRight found but not blocking - barrier on [{cell.X}, {cell.Y}], movingRight={isMovingRight}, movingLeft={isMovingLeft}, isSourceCell={isSourceCell}"); }
             }
         }
         
-        Debug.Log($"IsBlocked: CheckCellChildrenForBarriers - No blocking barrier found on cell [{cell.X}, {cell.Y}]");
+        // Debug.Log($"IsBlocked: CheckCellChildrenForBarriers - No blocking barrier found on cell [{cell.X}, {cell.Y}]");
         return false;
     }
 

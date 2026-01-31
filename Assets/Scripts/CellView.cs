@@ -80,7 +80,7 @@ public class CellView : MonoBehaviour
         else if (!hasLoggedBadgeWarning)
         {
             // Debug warning if Badge is not assigned (only log once to avoid spam)
-            Debug.LogWarning($"CellView: Badge SpriteRenderer is not assigned in the Inspector and could not be auto-found! Please assign it in the prefab.");
+            // Debug.LogWarning($"CellView: Badge SpriteRenderer is not assigned in the Inspector and could not be auto-found! Please assign it in the prefab.");
             hasLoggedBadgeWarning = true;
         }
     }
